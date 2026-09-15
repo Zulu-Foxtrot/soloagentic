@@ -12,6 +12,7 @@
             --accent: #58a6ff;
             --border: #30363d;
             --muted: #8b949e;
+            --code-bg: #0d1117;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -22,7 +23,7 @@
             padding: 0;
         }
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 3rem auto;
             padding: 0 1.5rem;
         }
@@ -42,7 +43,7 @@
         h2 {
             color: var(--accent);
             font-size: 1.4rem;
-            margin-top: 2rem;
+            margin-top: 2.5rem;
             border-bottom: 1px solid var(--border);
             padding-bottom: 0.5rem;
         }
@@ -55,6 +56,7 @@
             font-size: 0.9rem;
             margin-bottom: 2rem;
             display: flex;
+            flex-wrap: wrap;
             gap: 1rem;
             align-items: center;
         }
@@ -78,6 +80,30 @@
             display: inline-block;
             font-weight: 500;
         }
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.5rem;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+        }
+        code {
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        pre code {
+            background: none;
+            padding: 0;
+        }
+        ul {
+            padding-left: 1.5rem;
+            margin: 1rem 0;
+        }
+        li {
+            margin-bottom: 0.5rem;
+        }
         footer {
             text-align: center;
             padding: 3rem;
@@ -96,25 +122,73 @@
                 <span class="badge">Architecture & Stacks</span>
                 <span>Published on 2026-09-16</span>
                 <span>•</span>
-                <span>7 min read</span>
+                <span>2 min read</span>
             </div>
             <h1>Architecting a 24/7 Autonomous AI Agent Pipeline for Solo Founders</h1>
-            <p style="font-size: 1.2rem; color: #ffffff; margin-top: 1rem; font-weight: 400;">In 2026, building a solo business no longer means working 16 hours a day. By structuring multi-agent runtimes with local background processes, founders are achieving unprecedented leverage. Here is the complete architectural breakdown of a production-grade autonomous agent pipeline.</p>
+            <p style="font-size: 1.2rem; color: #ffffff; margin-top: 1rem; font-weight: 400;">In 2026, building a solo business no longer means working 16 hours a day. By structuring multi-agent runtimes with local background processes, founders are achieving unprecedented leverage. Here is the complete architectural breakdown of a production-grade autonomous agent pipeline you can deploy today on zero-cost infrastructure.</p>
             <hr style="border:0; border-top:1px solid var(--border); margin: 2rem 0;">
             
-            
-            <h2>1. The Core Philosophy of Solo Automation</h2>
-            <p>Traditional automation tools like basic webhook triggers fall short when dealing with ambiguity. Multi-agent architectures solve this by separating responsibilities: a Research Agent gathers data, a Synthesis Agent processes insights, and a Deployment Agent pushes updates directly to production.</p>
-        
-            <h2>2. Setting Up the Local Orchestration Layer</h2>
-            <p>To keep operational costs at absolute zero, leverage your existing hardware. Using Python and scheduled cron tasks, you can spin up isolated terminal contexts that execute tasks, verify outputs, and log exceptions without human intervention.</p>
-        
-            <h2>3. Error Handling and Self-Healing Loops</h2>
-            <p>The hardest part of autonomous systems isn't the happy path—it's failure recovery. A robust agentic loop must include validation gates. If an API call fails or a build errors out, the supervisor agent captures the traceback, applies a patch, and retries safely.</p>
-        
-            <h2>4. Monetization & Practical ROI</h2>
-            <p>When your administrative and content generation overhead drops by 80%, your focus shifts purely to high-leverage product decisions and community engagement. That is how solo founders cross the $1M revenue threshold with zero full-time employees.</p>
-        
+            <h2>1. The Core Philosophy: Agents Over Scripts</h2>
+<p>Traditional automation tools like basic webhook triggers or linear scripts fall short when dealing with ambiguity, retries, and decision-making. A true agentic architecture separates concerns into specialized roles:</p><ul><li><strong>Research Agent:</strong> Crawls APIs, RSS feeds, and web sources; normalizes data into structured JSON.</li><li><strong>Synthesis Agent:</strong> Takes raw data, applies LLM reasoning (summarization, classification, insight extraction), outputs actionable briefs.</li><li><strong>Deployment Agent:</strong> Commits generated artifacts (Markdown, HTML, code) to Git, triggers CI/CD, posts to social APIs.</li></ul>
+<h2>2. Local Orchestration Layer: Zero-Cost Runtime</h2>
+<p>To keep operational costs at absolute zero, leverage your existing hardware (or a cheap VPS). The stack is remarkably simple:</p>
+<pre><code># scheduler.py - Minimal cron replacement using schedule library
+import schedule
+import time
+import subprocess
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+def run_agent(agent_name):
+    logging.info(f'Starting {agent_name}...')
+    result = subprocess.run(['python', f'agents/{agent_name}.py'], capture_output=True, text=True)
+    if result.returncode != 0:
+        logging.error(f'{agent_name} failed: {result.stderr}')
+    else:
+        logging.info(f'{agent_name} completed successfully.')
+
+# Define your agent schedule
+schedule.every().day.at("06:00").do(run_agent, 'research_agent')
+schedule.every().day.at("06:30").do(run_agent, 'synthesis_agent')
+schedule.every().day.at("07:00").do(run_agent, 'deployment_agent')
+
+if __name__ == "__main__":
+    logging.info("Orchestrator started. Waiting for jobs...")
+    while True:
+        schedule.run_pending()
+        time.sleep(60)</code></pre>
+<ul><li>Run this as a background systemd service (Linux) or NSSM service (Windows) for true 24/7 uptime.</li><li>Each agent script is independent — swap, debug, or scale individually.</li></ul>
+<h2>3. Error Handling & Self-Healing Loops</h2>
+<p>The hardest part of autonomous systems isn't the happy path—it's failure recovery. A robust agentic loop must include validation gates. If an API call fails, a build errors out, or an LLM hallucinates, the supervisor captures the traceback, applies a patch, and retries safely.</p>
+<pre><code># supervisor.py - Wrapper for resilient execution
+import json
+import traceback
+from tenacity import retry, stop_after_attempt, wait_exponential
+
+class AgentSupervisor:
+    def __init__(self, agent_func, max_retries=3):
+        self.agent_func = agent_func
+        self.max_retries = max_retries
+
+    @retry(wait=wait_exponential(multiplier=1, min=2, max=10), stop=stop_after_attempt(3))
+    def execute_with_retry(self, *args, **kwargs):
+        try:
+            result = self.agent_func(*args, **kwargs)
+            self._validate_output(result)
+            return result
+        except Exception as e:
+            logging.error(f"Attempt failed: {e}\n{traceback.format_exc()}")
+            raise
+
+    def _validate_output(self, output):
+        # Custom validation logic per agent
+        if not output or (isinstance(output, dict) and not output.get('success')):
+            raise ValueError("Invalid output structure")</code></pre>
+<ul><li>Use <code>tenacity</code> for exponential backoff retries.</li><li>Implement <code>_validate_output</code> per agent to catch silent failures (empty files, malformed JSON).</li><li>Log everything to a rotating file handler for post-mortem debugging.</li></ul>
+<h2>4. Monetization & Practical ROI</h2>
+<p>When your administrative and content generation overhead drops by 80%, your focus shifts purely to high-leverage product decisions and community engagement. That is how solo founders cross the $1M revenue threshold with zero full-time employees. This pipeline isn't just a toy—it's the operating system of a modern one-person business.</p><ul><li><strong>Affiliate Revenue:</strong> Embed tracking links in generated content for tools you genuinely use (Make, n8n, hosting, LLM APIs).</li><li><strong>Digital Products:</strong> Package your refined agent scripts as a 'Solo Founder Automation Kit' ($49-$99).</li><li><strong>High-Ticket Services:</strong> Use the pipeline output as a portfolio to sell 'Custom AI Automation Setup' ($1,500+).</li></ul>
+
 
             <hr style="border:0; border-top:1px solid var(--border); margin: 2.5rem 0;">
             <p><strong>About SoloAgentic:</strong> We document real-world, zero-cost autonomous architectures for solo founders building high-leverage digital businesses.</p>
