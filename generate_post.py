@@ -1,18 +1,36 @@
 import os
 import datetime
 
-# Otonom İçerik Üretici - SoloAgentic Hub
-# Bu script, solopreneur ve AI ajanları nişinde otonom makaleler üretir ve siteye ekler.
-
+# SoloAgentic Otonom Makale Fabrikası
 OUTPUT_DIR = "C:/Users/zafer/solopreneur-ai-hub"
 POSTS_DIR = os.path.join(OUTPUT_DIR, "posts")
-
 os.makedirs(POSTS_DIR, exist_ok=True)
 
-def generate_article():
-    today = datetime.datetime.now().strftime("%Y-%m-%d")
-    title = f"Autonomous AI Workflows for Solopreneurs: Daily Briefing ({today})"
-    filename = f"workflow-briefing-{today}.html"
+TOPICS = [
+    {
+        "title": "How to Automate Client Onboarding with AI Agents",
+        "slug": "automate-client-onboarding-ai-agents",
+        "content": "Client onboarding is one of the highest friction points for solo founders. By deploying a simple multi-agent pipeline using Python and local LLMs, you can automatically ingest new client forms, generate custom project scopes, and set up the entire workspace within seconds."
+    },
+    {
+        "title": "The Zero-Cost Tech Stack Behind Successful Solopreneurs",
+        "slug": "zero-cost-tech-stack-solopreneurs",
+        "content": "You don't need an expensive software stack to run a profitable solo business. Combining open-source tools like GitHub Pages, local cron orchestration, and free-tier API endpoints allows solo operators to run entire digital businesses with zero operational cost."
+    },
+    {
+        "title": "Why Autonomous Cron Jobs Are Better Than Traditional SaaS",
+        "slug": "autonomous-cron-jobs-vs-saas",
+        "content": "Instead of paying for multiple automation subscriptions, solo founders are shifting towards lightweight cron scripts running locally or on inexpensive VPS nodes. Complete data ownership, zero platform lock-in, and absolute customizability."
+    }
+]
+
+def generate_new_post():
+    today = datetime.datetime.now()
+    day_index = today.day % len(TOPICS)
+    topic = TOPICS[day_index]
+    
+    date_str = today.strftime("%Y-%m-%d")
+    filename = f"{topic['slug']}-{date_str}.html"
     filepath = os.path.join(POSTS_DIR, filename)
     
     html_content = f"""<!DOCTYPE html>
@@ -20,7 +38,7 @@ def generate_article():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title} | SoloAgentic</title>
+    <title>{topic['title']} | SoloAgentic</title>
     <style>
         :root {{
             --bg: #0d1117;
@@ -58,12 +76,15 @@ def generate_article():
     <div class="container">
         <a class="back" href="../index.html">&larr; Back to Home</a>
         <div class="card">
-            <h1>{title}</h1>
-            <p><em>Published on {today} by SoloAgentic Autonomous Engine</em></p>
+            <h1>{topic['title']}</h1>
+            <p><em>Published on {date_str} by SoloAgentic Autonomous Engine</em></p>
             <hr style="border:0; border-top:1px solid var(--border); margin: 1.5rem 0;">
-            <p>As the solopreneur economy accelerates in 2026, leveraging autonomous agent stacks has moved from a competitive edge to a baseline requirement. Solo founders are now orchestrating background pipelines that handle everything from multi-source research to automated content and code deployment.</p>
-            <h3>Key Takeaway of the Day</h3>
-            <p>Instead of doing manual repetitive tasks, structure your workflows into modular agent scripts running via local cron jobs or background terminal sessions. This guarantees zero human friction and maximum operational leverage.</p>
+            <p>{topic['content']}</p>
+            <h3>Execution Blueprint</h3>
+            <p>1. Define your repetitive trigger event.<br>
+               2. Write a lightweight Python script or prompt sequence.<br>
+               3. Schedule via background cron or agentic runtime.<br>
+               4. Review outputs weekly.</p>
             <p>Stay tuned for our next automated briefing update.</p>
         </div>
     </div>
@@ -74,7 +95,22 @@ def generate_article():
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(html_content)
     
-    print(f"[SUCCESS] Otonom içerik üretildi: {filepath}")
+    print(f"[SUCCESS] Yeni otonom makale oluşturuldu: {filepath}")
+    return topic, filename, date_str
+
+def update_index(topic, filename, date_str):
+    index_path = os.path.join(OUTPUT_DIR, "index.html")
+    with open(index_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    
+    new_link = f'<li><a href="posts/{filename}">{topic["title"]} ({date_str})</a></li>'
+    
+    if new_link not in content:
+        content = content.replace("<ul>", f"<ul>\n                {new_link}")
+        with open(index_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        print("[SUCCESS] index.html güncellendi!")
 
 if __name__ == "__main__":
-    generate_article()
+    top, fn, dt = generate_new_post()
+    update_index(top, fn, dt)
